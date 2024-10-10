@@ -73,9 +73,9 @@ vector-db-based = ["cohere (==4.21)", "langchain (==0.1.16)", "openai[embeddings
 
 [package.source]
 type = "git"
-url = "git@github.com:immersa-co/airbyte-cdk.git"
+url = "https://github.com/immersa-co/airbyte-cdk.git"
 reference = "main"
-resolved_reference = "978386d204acdf29fca7338d82aa31dd9534fc65"
+resolved_reference = "ae032ab0510b8bd8e0840de79448ade1ceb04936"
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
@@ -3756,4 +3756,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0"
-content-hash = "7769adbb91fc587ef509e33b229b607df4cf9735402d259c97a73067e4d8b61a"
+content-hash = "27041bea269f3ec9f6112ece46a16028069094509813ade6c790568aca039869"
