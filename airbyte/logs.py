@@ -120,24 +120,23 @@ set this value to `None`.
 
 
 @lru_cache
-def get_global_file_logger() -> logging.Logger | None:
+def get_global_file_logger(logger=None) -> logging.Logger | None:
     """Return the global logger for PyAirbyte.
 
     This logger is configured to write logs to the console and to a file in the log directory.
     """
-    logger = logging.getLogger("airbyte")
+    if isinstance(logger, logging.LoggerAdapter):
+        logger = logger.logger  # Get the underlying logger if it's an adapter
+
+    logger = logging.getLogger("airbyte") if logger is None else logger
     logger.setLevel(logging.INFO)
-    logger.propagate = False
+
+    # Enable propagation to ensure logs appear in the Prefect UI
+    logger.propagate = True
 
     if AIRBYTE_LOGGING_ROOT is None:
         # No temp directory available, so return None
         return None
-
-    # Else, configure the logger to write to a file
-
-    # Remove any existing handlers
-    for handler in logger.handlers:
-        logger.removeHandler(handler)
 
     yyyy_mm_dd: str = pendulum.now().format("YYYY-MM-DD")
     folder = AIRBYTE_LOGGING_ROOT / yyyy_mm_dd
@@ -159,14 +158,10 @@ def get_global_file_logger() -> logging.Logger | None:
     )
 
     if AIRBYTE_STRUCTURED_LOGGING:
-        # Create a formatter and set it for the handler
         formatter = logging.Formatter("%(message)s")
         file_handler.setFormatter(formatter)
-
-        # Add the file handler to the logger
         logger.addHandler(file_handler)
 
-        # Configure structlog
         structlog.configure(
             processors=[
                 structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S"),
@@ -181,19 +176,27 @@ def get_global_file_logger() -> logging.Logger | None:
             wrapper_class=structlog.stdlib.BoundLogger,
             cache_logger_on_first_use=True,
         )
-
-        # Create a logger
         return structlog.get_logger("airbyte")
 
-    # Create and configure file handler
     file_handler.setFormatter(
         logging.Formatter(
             fmt="%(asctime)s - %(levelname)s - %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
         )
     )
-
     logger.addHandler(file_handler)
+
+    # Also add a StreamHandler for console output (which Prefect captures)
+    if not any(isinstance(handler, logging.StreamHandler) for handler in logger.handlers):
+        console_handler = logging.StreamHandler()
+        console_handler.setFormatter(
+            logging.Formatter(
+                fmt="%(asctime)s - %(levelname)s - %(message)s",
+                datefmt="%Y-%m-%d %H:%M:%S",
+            )
+        )
+        logger.addHandler(console_handler)
+
     return logger
 
 

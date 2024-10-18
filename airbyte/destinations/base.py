@@ -6,6 +6,7 @@ For usage examples, see the `airbyte.destinations` module documentation.
 
 from __future__ import annotations
 
+import logging
 import warnings
 from typing import IO, TYPE_CHECKING, Any, Literal, cast
 
@@ -71,6 +72,7 @@ class Destination(ConnectorBase, AirbyteWriterInterface):
         state_cache: CacheBase | None | Literal[False] = None,
         write_strategy: WriteStrategy = WriteStrategy.AUTO,
         force_full_refresh: bool = False,
+        logger,
     ) -> WriteResult:
         """Write data from source connector or already cached source data.
 
@@ -182,6 +184,7 @@ class Destination(ConnectorBase, AirbyteWriterInterface):
             cache=cache or None,
             destination=self,
             expected_streams=catalog_provider.stream_names,
+            logger=logger,
         )
 
         source_state_provider: StateProviderBase
