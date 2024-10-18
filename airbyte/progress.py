@@ -164,6 +164,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
         cache: CacheBase | None,
         destination: Destination | None,
         expected_streams: list[str] | None = None,
+        logger = None,
     ) -> None:
         """Initialize the progress tracker."""
         # Components
@@ -171,7 +172,7 @@ class ProgressTracker:  # noqa: PLR0904  # Too many public methods
         self._cache = cache
         self._destination = destination
 
-        self._file_logger: logging.Logger | None = get_global_file_logger()
+        self._file_logger = get_global_file_logger(logger)
 
         # Streams expected (for progress bar)
         self.num_streams_expected = len(expected_streams) if expected_streams else 0
